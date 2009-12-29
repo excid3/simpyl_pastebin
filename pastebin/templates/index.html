@@ -1,5 +1,12 @@
 <html>
 <body>
-Ohai!!
+    {% if previous %}
+        {{previous}}
+    {% endif %}
+    <form name="pastebin" method="post">
+        <textarea name="paste"></textarea>
+        <br />
+        <input type="submit" value="Submit"></input>
+    </form>
 </body>
 </html>
