@@ -1,0 +1,13 @@
+Simpyl Pastebin
+
+Author: Chris Oliver <excid3@gmail.com>
+
+Usage:
+    python manage.py runserver
+
+    The site will be accessbile on http://localhost:8000
+
+    If you have issues with pastebin_paste not existing, run:
+    
+    python manage.py sql pastebin
+    python manage.py syncdb
