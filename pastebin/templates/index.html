@@ -1,7 +1,10 @@
 <html>
 <body>
+    {% if error %}
+        {{error}}
+    {% endif %}
     {% if previous %}
-        {{previous}}
+        <a href="{{previous}}">{{previous}}</a>
     {% endif %}
     <form name="pastebin" method="post">
         <textarea name="paste"></textarea>
