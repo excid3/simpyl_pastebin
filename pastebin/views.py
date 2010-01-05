@@ -11,10 +11,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import hashlib
-
 from django import http
-from django.conf import settings
 from django.template import Context, loader
 from django.shortcuts import get_object_or_404
 
@@ -25,7 +22,12 @@ def main(request):
     previous = request.POST.get('paste', '')
     
     if previous:
-        id = hashlib.md5(previous).hexdigest()
+        try:
+            import hashlib
+            id = hashlib.md5(previous).hexdigest()
+        except:
+            import md5
+            id = md5.new(previous).hexdigest()
         
         try:
             Paste.objects.get(url=id)
