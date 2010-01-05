@@ -11,6 +11,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import cgi
+
 from django import http
 from django.template import Context, loader
 from django.shortcuts import get_object_or_404
@@ -37,7 +39,7 @@ def main(request):
         
         previous = 'http://%s/%s' % (request.get_host(), id)
             
-    t = loader.get_template('pastebin/templates/index.html')
+    t = loader.get_template('index.html')
     c = Context({
         'previous': previous
     })
@@ -52,11 +54,11 @@ def fetch_paste(request):
     try:
         p = Paste.objects.get(url=url)
     except:
-        t = loader.get_template('pastebin/templates/index.html')
+        t = loader.get_template('index.html')
         c = Context({
             'error': "Paste '%s' does not exist." % url
         })
         return http.HttpResponse(t.render(c))
     
-    return http.HttpResponse(p.content)
+    return http.HttpResponse(cgi.escape(p.content).replace("\n","<br />"))
 
