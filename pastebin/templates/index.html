@@ -1,28 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
 <html>
-<body>
-    {% if error %}
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>simpyl pastebin</title>
+    <link href="/static/css/stylesheet.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="/static/js/jquery-1.4.js"></script>
+    <script type="text/javascript" src="/static/js/application.js"></script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div id="header">
+        <h1>Simpyl Pastebin</h2>
+      </div>
+      {% if error %}
+      <div id="error">
         {{error}}
-    {% endif %}
-    {% if previous %}
-        <a href="{{previous}}">{{previous}}</a>
-    {% endif %}
-    <form name="pastebin" method="post">
-        <textarea name="paste"></textarea>
-        <br />
-        <input type="submit" value="Submit"></input>
-    </form>
-    
-    Simpyl Pastebin by <a href="http://excid3.com">Chris Oliver</a>
-    
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-try {
-var pageTracker = _gat._getTracker("UA-8399719-6");
-pageTracker._trackPageview();
-} catch(err) {}</script>
+      </div>
+      {% endif %}
+      <div id="main">
+        {% if previous %}
+          <input id="link" type="text" value="{{previous}}" />
+        {% endif %}
+        <form name="pastebin" method="post">
+          <textarea id="bin" name="paste" ></textarea><br />
+          <input type="submit" value="paste" />
+        </form>
+      </div>
 
-</body>
+      <div id="footer">
+        <ul>
+          <li><a href="http://github.com/excid3/simpyl_pastebin">Code</a></li>
+          <li><a href="http://github.com/excid3">Developer</a></li>
+          <li><a href="http://github.com/jluebbert">Designer</a></li>
+        </ul>
+      </div>
+
+      <script type="text/javascript">
+        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+        document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+      </script>
+      <script type="text/javascript">
+          try {
+            var pageTracker = _gat._getTracker("UA-8399719-6");
+            pageTracker._trackPageview();
+          } catch(err) {}
+      </script>
+    </div>
+  </body>
 </html>
