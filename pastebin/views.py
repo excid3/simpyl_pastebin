@@ -43,17 +43,17 @@ def main(request):
         previous = 'http://%s/%s' % (request.get_host(), id)
 
         if hasattr(settings, 'SIMPYL_PASTEBIN_ZMQ_URL') :
-          import zmq
-          ztx = zmq.Context()
-          pub = ztx.socket(zmq.PUB)
-          pub.connect(settings.SIMPYL_PASTEBIN_ZMQ_URL)
+            import zmq
+            ztx = zmq.Context()
+            pub = ztx.socket(zmq.PUB)
+            pub.connect(settings.SIMPYL_PASTEBIN_ZMQ_URL)
 
-          try :
-            remote_ip = request.META['HTTP_X_REAL_IP']
-          except :
-            remote_ip = request.META['REMOTE_ADDR']
+            try :
+                remote_ip = request.META['HTTP_X_REAL_IP']
+            except :
+               remote_ip = request.META['REMOTE_ADDR']
 
-          pub.send("action::paste by %s: %s" % (remote_ip, previous))
+            pub.send("action::paste by %s: %s" % (remote_ip, previous))
             
     t = loader.get_template('index.html')
     c = Context({
@@ -76,5 +76,15 @@ def fetch_paste(request):
         })
         return http.HttpResponse(t.render(c))
     
-    return http.HttpResponse("<h1>paste.</h1><br /><a href=\"/\">make another</a><br /><br /><tt>" + cgi.escape(p.content).replace("\n","<br />") + "</tt>")
+    repl = [
+        ("\t", "  "),
+        (" ", "&nbsp;"),
+        ("\n","<br />")
+    ]
+
+    esc_text = cgi.escape(p.content)
+    for a,b in repl :
+        esc_text = esc_text.replace(a,b)
+
+    return http.HttpResponse("<h1>paste.</h1><br /><a href=\"/\">make another</a><br /><br /><tt>" + esc_text + "</tt>")
 
