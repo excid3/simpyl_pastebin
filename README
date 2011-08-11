@@ -13,3 +13,5 @@ Usage:
     python manage.py syncdb
 
 If the setting SIMPYL_PASTEBIN_ZMQ_URL is set in django, a small text notification will be PUB'd to a SUB socket at the url specified.
+
+The optional username field will be persisted between pages and sessions if SESSION_COOKIE_DOMAIN and SESSION_COOKIE_SECURE are set in settings.  The username will be broadcasted with the ZMQ publish.
