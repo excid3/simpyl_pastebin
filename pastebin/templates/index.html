@@ -20,10 +20,10 @@
       {% endif %}
       <div id="main">
         {% if previous %}
-          <input id="link" type="text" value="{{previous}}" />
+          you pasted: <a href="{{previous}}">{{previous}}</a>
         {% endif %}
         <form name="pastebin" method="post">
-          <textarea id="bin" name="paste" ></textarea><br />
+          <textarea id="bin" name="paste" rows=40 cols=160></textarea><br />
           <input type="submit" value="paste" />
         </form>
       </div>

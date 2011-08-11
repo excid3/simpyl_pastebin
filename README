@@ -11,3 +11,5 @@ Usage:
     
     python manage.py sql pastebin
     python manage.py syncdb
+
+If the setting SIMPYL_PASTEBIN_ZMQ_URL is set in django, a small text notification will be PUB'd to a SUB socket at the url specified.

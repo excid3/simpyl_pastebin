@@ -17,8 +17,9 @@ from django import http
 from django.template import Context, loader
 from django.shortcuts import get_object_or_404
 
-from models import Paste
+import settings
 
+from models import Paste
 
 def main(request):
     previous = request.POST.get('paste', '')
@@ -30,7 +31,9 @@ def main(request):
         except:
             import md5
             id = md5.new(previous).hexdigest()
-        
+
+        id = id[0:12]
+
         try:
             Paste.objects.get(url=id)
         except:
@@ -38,6 +41,19 @@ def main(request):
             p.save()
         
         previous = 'http://%s/%s' % (request.get_host(), id)
+
+        if hasattr(settings, 'SIMPYL_PASTEBIN_ZMQ_URL') :
+            import zmq
+            ztx = zmq.Context()
+            pub = ztx.socket(zmq.PUB)
+            pub.connect(settings.SIMPYL_PASTEBIN_ZMQ_URL)
+
+            try :
+                remote_ip = request.META['HTTP_X_REAL_IP']
+            except :
+               remote_ip = request.META['REMOTE_ADDR']
+
+            pub.send("action::paste by %s: %s" % (remote_ip, previous))
             
     t = loader.get_template('index.html')
     c = Context({
@@ -60,5 +76,15 @@ def fetch_paste(request):
         })
         return http.HttpResponse(t.render(c))
     
-    return http.HttpResponse(cgi.escape(p.content).replace("\n","<br />"))
+    repl = [
+        ("\t", "  "),
+        (" ", "&nbsp;"),
+        ("\n","<br />")
+    ]
+
+    esc_text = cgi.escape(p.content)
+    for a,b in repl :
+        esc_text = esc_text.replace(a,b)
+
+    return http.HttpResponse("<h1>paste.</h1><br /><a href=\"/\">make another</a><br /><br /><tt>" + esc_text + "</tt>")
 
