@@ -19,7 +19,6 @@ from django.shortcuts import get_object_or_404
 
 from models import Paste
 
-
 def main(request):
     previous = request.POST.get('paste', '')
     
@@ -30,7 +29,9 @@ def main(request):
         except:
             import md5
             id = md5.new(previous).hexdigest()
-        
+
+        id = id[0:12]
+
         try:
             Paste.objects.get(url=id)
         except:
@@ -38,6 +39,19 @@ def main(request):
             p.save()
         
         previous = 'http://%s/%s' % (request.get_host(), id)
+
+        if hasattr(settings, 'SIMPYL_PASTEBIN_ZMQ_URL') :
+          import zmq
+          ztx = zmq.Context()
+          pub = ztx.socket(zmq.PUB)
+          pub.connect(settings.SIMPYL_PASTEBIN_ZMQ_URL)
+
+          try :
+            remote_ip = request.META['HTTP_X_REAL_IP']
+          except :
+            remote_ip = request.META['REMOTE_ADDR']
+
+          pub.send("action::paste by %s: %s" % (remote_ip, previous))
             
     t = loader.get_template('index.html')
     c = Context({
