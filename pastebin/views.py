@@ -24,6 +24,8 @@ from models import Paste
 import unicodedata
 import datetime
 
+titl = getattr(settings, 'SIMPYL_PASTEBIN_TITLE', 'Simpyl Pastebin')
+
 def set_cookie(response, key, value, days_expire = 7):
     if not hasattr(settings, 'SESSION_COOKIE_DOMAIN') or not hasattr(settings, 'SESSION_COOKIE_SECURE'):
         return None
@@ -90,6 +92,8 @@ def main(request):
     t = loader.get_template('index.html')
 
     cdict = {
+        'title': titl,
+        'title_low': titl.lower(),
         'previous': previous,
         'user_name': user_name
     }
@@ -113,6 +117,8 @@ def fetch_paste(request):
     except:
         t = loader.get_template('index.html')
         c = Context({
+        'title': titl + ' 404',
+        'title_low': titl.lower() + ' 404',
             'error': "Paste '%s' does not exist." % url
         })
         return http.HttpResponse(t.render(c))
