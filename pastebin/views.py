@@ -56,9 +56,15 @@ def main(request):
             pub.send("action::paste by %s: %s" % (remote_ip, previous))
             
     t = loader.get_template('index.html')
-    c = Context({
+
+    cdict = {
         'previous': previous
-    })
+    }
+
+    if hasattr(settings, 'GA_ID') :
+        cdict['GA_ID'] = settings.GA_ID
+
+    c = Context(cdict)
     
     return http.HttpResponse(t.render(c))
 
