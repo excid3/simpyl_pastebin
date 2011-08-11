@@ -76,5 +76,5 @@ def fetch_paste(request):
         })
         return http.HttpResponse(t.render(c))
     
-    return http.HttpResponse(cgi.escape(p.content).replace("\n","<br />"))
+    return http.HttpResponse("<h1>paste.</h1><br /><a href=\"/\">make another</a><br /><br /><tt>" + cgi.escape(p.content).replace("\n","<br />") + "</tt>")
 
