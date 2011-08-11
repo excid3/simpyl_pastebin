@@ -17,6 +17,8 @@ from django import http
 from django.template import Context, loader
 from django.shortcuts import get_object_or_404
 
+import settings
+
 from models import Paste
 
 def main(request):
