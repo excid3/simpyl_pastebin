@@ -101,6 +101,9 @@ def main(request):
         'user_name': user_name
     }
 
+    if hasattr(settings, 'SIMPYL_PASTEBIN_NOTELINE') :
+        cdict['noteline'] = settings.SIMPYL_PASTEBIN_NOTELINE
+
     if hasattr(settings, 'GA_ID') :
         cdict['GA_ID'] = settings.GA_ID
 
@@ -136,4 +139,9 @@ def fetch_paste(request):
     for a,b in repl :
         esc_text = esc_text.replace(a,b)
 
-    return http.HttpResponse("<h1>paste.</h1><br /><a href=\"/\">make another</a><br /><br /><tt>" + esc_text + "</tt>")
+    if hasattr(settings, 'SIMPYL_PASTEBIN_NOTELINE') :
+        noteline = cgi.escape(settings.SIMPYL_PASTEBIN_NOTELINE)
+    else :
+        noteline = ''
+
+    return http.HttpResponse("<h1>paste.</h1><br /><a href=\"/\">make another</a><br />%s<br /><br /><tt>%s</tt>" % (noteline, esc_text))
