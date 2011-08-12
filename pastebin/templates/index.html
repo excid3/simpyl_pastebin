@@ -20,11 +20,11 @@
       {% endif %}
       <div id="main">
         {% if previous %}
-          you pasted: <a href="{{previous}}">{{previous}}</a>
+          you pasted: <a href="{{previous}}">{{previous}}</a>&nbsp;-&nbsp;{% if noteline %}{{noteline}}{% endif %}
         {% endif %}
         <form name="pastebin" method="post">
           Your name: <input type="text" name="user_name" width="40" value="{% if user_name %}{{user_name}}{% endif %}" /><br />
-          <textarea id="bin" name="paste" rows=40 cols=160></textarea><br />
+          <textarea id="bin" name="paste" rows="40" style="height: 70%; width: 100%;"></textarea><br />
           <input type="submit" value="paste" />
         </form>
       </div>

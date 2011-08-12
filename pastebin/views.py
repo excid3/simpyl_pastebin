@@ -48,6 +48,9 @@ def sanitize_username(user_name) :
 
 def main(request):
     previous = request.POST.get('paste', '')
+
+    user_name = ''
+
     user_name_post = request.POST.get('user_name', '')
 
     if 'user_name' in request.COOKIES :
@@ -61,20 +64,33 @@ def main(request):
     if previous:
         try:
             import hashlib
-            id = hashlib.md5(previous).hexdigest()
+            hash = hashlib.md5(previous).hexdigest()
         except:
             import md5
-            id = md5.new(previous).hexdigest()
+            hash = md5.new(previous).hexdigest()
 
-        id = id[0:12]
+        id = None
 
-        try:
-            Paste.objects.get(url=id)
-        except:
+        for idsize in range(1, len(hash) + 1) :
+            useid = hash[0:idsize]
+
+            try :
+                Paste.objects.get(url=useid)
+            except :
+                id = useid
+                break
+
+        if id :
+            id = 'p' + id
             p = Paste(content=previous, url=id)
             p.save()
         
-        previous = 'http://%s/%s' % (sanitize_nasty(request.get_host()), id)
+        host = sanitize_nasty(request.get_host())
+        if hasattr(settings, 'SIMPYL_SEARCH_PATH_OK') :
+            if host.endswith('.' + settings.SIMPYL_SEARCH_PATH_OK) :
+                host = host[0:-len(settings.SIMPYL_SEARCH_PATH_OK)-1]
+        
+        previous = 'http://%s/%s' % (host, id)
 
         if hasattr(settings, 'SIMPYL_PASTEBIN_ZMQ_URL') :
             import zmq
@@ -100,6 +116,9 @@ def main(request):
         'previous': previous,
         'user_name': user_name
     }
+
+    if hasattr(settings, 'SIMPYL_PASTEBIN_NOTELINE') :
+        cdict['noteline'] = settings.SIMPYL_PASTEBIN_NOTELINE
 
     if hasattr(settings, 'GA_ID') :
         cdict['GA_ID'] = settings.GA_ID
@@ -136,4 +155,9 @@ def fetch_paste(request):
     for a,b in repl :
         esc_text = esc_text.replace(a,b)
 
-    return http.HttpResponse("<h1>paste.</h1><br /><a href=\"/\">make another</a><br /><br /><tt>" + esc_text + "</tt>")
+    if hasattr(settings, 'SIMPYL_PASTEBIN_NOTELINE') :
+        noteline = cgi.escape(settings.SIMPYL_PASTEBIN_NOTELINE)
+    else :
+        noteline = ''
+
+    return http.HttpResponse("<h1>paste.</h1><br /><a href=\"/\">make another</a><br />%s<br /><br /><tt>%s</tt>" % (noteline, esc_text))
