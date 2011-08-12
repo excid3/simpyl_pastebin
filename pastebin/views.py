@@ -38,10 +38,13 @@ def set_cookie(response, key, value, days_expire = 7):
     response.set_cookie(key, value, max_age=max_age, expires=expires, domain=settings.SESSION_COOKIE_DOMAIN, secure=settings.SESSION_COOKIE_SECURE or None)
     return response
 
+def sanitize_nasty(txt) :
+    if not isinstance(txt, str) :
+        txt = unicodedata.normalize('NFKD', txt).encode('ascii','ignore')
+    return (''.join([c for c in txt if c in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- .,^']))
+
 def sanitize_username(user_name) :
-    if not isinstance(user_name, str) :
-        user_name = unicodedata.normalize('NFKD', user_name).encode('ascii','ignore')
-    return (''.join([c for c in user_name if c in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- ']))[0:50]
+    return sanitize_nasty(user_name)[0:50]
 
 def main(request):
     previous = request.POST.get('paste', '')
@@ -71,7 +74,7 @@ def main(request):
             p = Paste(content=previous, url=id)
             p.save()
         
-        previous = 'http://%s/%s' % (request.get_host(), id)
+        previous = 'http://%s/%s' % (sanitize_nasty(request.get_host()), id)
 
         if hasattr(settings, 'SIMPYL_PASTEBIN_ZMQ_URL') :
             import zmq
@@ -81,7 +84,7 @@ def main(request):
 
             if not user_name :
                 try :
-                    user_name = request.META['HTTP_X_REAL_IP']
+                    user_name = sanitize_username(request.META['HTTP_X_REAL_IP'])
                 except :
                     user_name = request.META['REMOTE_ADDR']
             else :
@@ -119,7 +122,7 @@ def fetch_paste(request):
         c = Context({
         'title': titl + ' 404',
         'title_low': titl.lower() + ' 404',
-            'error': "Paste '%s' does not exist." % url
+            'error': "Paste requested does not exist."
         })
         return http.HttpResponse(t.render(c))
     
@@ -134,4 +137,3 @@ def fetch_paste(request):
         esc_text = esc_text.replace(a,b)
 
     return http.HttpResponse("<h1>paste.</h1><br /><a href=\"/\">make another</a><br /><br /><tt>" + esc_text + "</tt>")
-
