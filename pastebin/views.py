@@ -38,20 +38,23 @@ def set_cookie(response, key, value, days_expire = 7):
     response.set_cookie(key, value, max_age=max_age, expires=expires, domain=settings.SESSION_COOKIE_DOMAIN, secure=settings.SESSION_COOKIE_SECURE or None)
     return response
 
-def sanitize_nasty(user_name) :
-    if not isinstance(user_name, str) :
-        user_name = unicodedata.normalize('NFKD', user_name).encode('ascii','ignore')
-    return (''.join([c for c in user_name if c in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- .,^']))[0:50]
+def sanitize_nasty(txt) :
+    if not isinstance(txt, str) :
+        txt = unicodedata.normalize('NFKD', txt).encode('ascii','ignore')
+    return (''.join([c for c in txt if c in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- .,^']))
+
+def sanitize_username(user_name) :
+    return sanitize_nasty(user_name)[0:50]
 
 def main(request):
     previous = request.POST.get('paste', '')
     user_name_post = request.POST.get('user_name', '')
 
     if 'user_name' in request.COOKIES :
-        user_name = sanitize_nasty(request.COOKIES['user_name'])
+        user_name = sanitize_username(request.COOKIES['user_name'])
     
     if user_name_post :
-        user_name = sanitize_nasty(user_name_post)
+        user_name = sanitize_username(user_name_post)
 
     ucookie = False
 
@@ -81,7 +84,7 @@ def main(request):
 
             if not user_name :
                 try :
-                    user_name = sanitize_nasty(request.META['HTTP_X_REAL_IP'])
+                    user_name = sanitize_username(request.META['HTTP_X_REAL_IP'])
                 except :
                     user_name = request.META['REMOTE_ADDR']
             else :
