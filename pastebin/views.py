@@ -48,6 +48,9 @@ def sanitize_username(user_name) :
 
 def main(request):
     previous = request.POST.get('paste', '')
+
+    user_name = ''
+
     user_name_post = request.POST.get('user_name', '')
 
     if 'user_name' in request.COOKIES :
