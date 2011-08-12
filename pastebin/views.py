@@ -64,20 +64,33 @@ def main(request):
     if previous:
         try:
             import hashlib
-            id = hashlib.md5(previous).hexdigest()
+            hash = hashlib.md5(previous).hexdigest()
         except:
             import md5
-            id = md5.new(previous).hexdigest()
+            hash = md5.new(previous).hexdigest()
 
-        id = id[0:12]
+        id = None
 
-        try:
-            Paste.objects.get(url=id)
-        except:
+        for idsize in range(1, len(hash) + 1) :
+            useid = hash[0:idsize]
+
+            try :
+                Paste.objects.get(url=useid)
+            except :
+                id = useid
+                break
+
+        if id :
+            id = 'p' + id
             p = Paste(content=previous, url=id)
             p.save()
         
-        previous = 'http://%s/%s' % (sanitize_nasty(request.get_host()), id)
+        host = sanitize_nasty(request.get_host())
+        if hasattr(settings, 'SIMPYL_SEARCH_PATH_OK') :
+            if host.endswith('.' + settings.SIMPYL_SEARCH_PATH_OK) :
+                host = host[0:-len(settings.SIMPYL_SEARCH_PATH_OK)-1]
+        
+        previous = 'http://%s/%s' % (host, id)
 
         if hasattr(settings, 'SIMPYL_PASTEBIN_ZMQ_URL') :
             import zmq
