@@ -21,9 +21,40 @@ import settings
 
 from models import Paste
 
+import unicodedata
+import datetime
+
+titl = getattr(settings, 'SIMPYL_PASTEBIN_TITLE', 'Simpyl Pastebin')
+
+def set_cookie(response, key, value, days_expire = 7):
+    if not hasattr(settings, 'SESSION_COOKIE_DOMAIN') or not hasattr(settings, 'SESSION_COOKIE_SECURE'):
+        return None
+    
+    if days_expire is None:
+        max_age = 365*24*3600
+    else:
+        max_age = days_expire*24*3600
+    expires = datetime.datetime.strftime(datetime.datetime.utcnow() + datetime.timedelta(seconds=max_age), "%a, %d-%b-%Y %H:%M:%S GMT")
+    response.set_cookie(key, value, max_age=max_age, expires=expires, domain=settings.SESSION_COOKIE_DOMAIN, secure=settings.SESSION_COOKIE_SECURE or None)
+    return response
+
+def sanitize_username(user_name) :
+    if not isinstance(user_name, str) :
+        user_name = unicodedata.normalize('NFKD', user_name).encode('ascii','ignore')
+    return (''.join([c for c in user_name if c in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- ']))[0:50]
+
 def main(request):
     previous = request.POST.get('paste', '')
+    user_name_post = request.POST.get('user_name', '')
+
+    if 'user_name' in request.COOKIES :
+        user_name = sanitize_username(request.COOKIES['user_name'])
     
+    if user_name_post :
+        user_name = sanitize_username(user_name_post)
+
+    ucookie = False
+
     if previous:
         try:
             import hashlib
@@ -48,20 +79,34 @@ def main(request):
             pub = ztx.socket(zmq.PUB)
             pub.connect(settings.SIMPYL_PASTEBIN_ZMQ_URL)
 
-            try :
-                remote_ip = request.META['HTTP_X_REAL_IP']
-            except :
-               remote_ip = request.META['REMOTE_ADDR']
+            if not user_name :
+                try :
+                    user_name = request.META['HTTP_X_REAL_IP']
+                except :
+                    user_name = request.META['REMOTE_ADDR']
+            else :
+                ucookie = user_name
 
-            pub.send("action::paste by %s: %s" % (remote_ip, previous))
+            pub.send("action::paste by %s: %s" % (user_name, previous))
             
     t = loader.get_template('index.html')
-    c = Context({
-        'previous': previous
-    })
-    
-    return http.HttpResponse(t.render(c))
 
+    cdict = {
+        'title': titl,
+        'title_low': titl.lower(),
+        'previous': previous,
+        'user_name': user_name
+    }
+
+    if hasattr(settings, 'GA_ID') :
+        cdict['GA_ID'] = settings.GA_ID
+
+    c = Context(cdict)
+    
+    resp = http.HttpResponse(t.render(c))
+    if ucookie :
+        set_cookie(resp, 'user_name', ucookie, days_expire=365)
+    return resp
 
 def fetch_paste(request):
     url = request.META.get('PATH_INFO', '')[1:]
@@ -72,6 +117,8 @@ def fetch_paste(request):
     except:
         t = loader.get_template('index.html')
         c = Context({
+        'title': titl + ' 404',
+        'title_low': titl.lower() + ' 404',
             'error': "Paste '%s' does not exist." % url
         })
         return http.HttpResponse(t.render(c))

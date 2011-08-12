@@ -3,7 +3,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>simpyl pastebin</title>
+    <title>{{title_low}}</title>
     <link href="/static/css/stylesheet.css" rel="stylesheet" type="text/css">
     <script type="text/javascript" src="/static/js/jquery-1.4.js"></script>
     <script type="text/javascript" src="/static/js/application.js"></script>
@@ -11,7 +11,7 @@
   <body>
     <div class="wrapper">
       <div id="header">
-        <h1>Simpyl Pastebin</h2>
+        <h1>{{title}}</h2>
       </div>
       {% if error %}
       <div id="error">
@@ -23,6 +23,7 @@
           you pasted: <a href="{{previous}}">{{previous}}</a>
         {% endif %}
         <form name="pastebin" method="post">
+          Your name: <input type="text" name="user_name" width="40" value="{% if user_name %}{{user_name}}{% endif %}" /><br />
           <textarea id="bin" name="paste" rows=40 cols=160></textarea><br />
           <input type="submit" value="paste" />
         </form>
@@ -36,16 +37,18 @@
         </ul>
       </div>
 
-      <script type="text/javascript">
-        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-        document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-      </script>
-      <script type="text/javascript">
-          try {
-            var pageTracker = _gat._getTracker("UA-8399719-6");
-            pageTracker._trackPageview();
-          } catch(err) {}
-      </script>
+      {% if GA_ID %}
+        <script type="text/javascript">
+          var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+          document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+        </script>
+        <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker({{GA_ID}});
+              pageTracker._trackPageview();
+            } catch(err) {}
+        </script>
+      {% endif %}
     </div>
   </body>
 </html>
